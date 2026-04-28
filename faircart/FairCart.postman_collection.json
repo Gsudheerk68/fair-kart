@@ -1,0 +1,476 @@
+{
+  "info": {
+    "name": "FairCart API v1",
+    "description": "Complete API collection for FairCart — Grocery Price Comparison Platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",      "value": "http://localhost:5000/api/v1" },
+    { "key": "userToken",    "value": "" },
+    { "key": "ownerToken",   "value": "" },
+    { "key": "shopId",       "value": "" },
+    { "key": "productId",    "value": "" },
+    { "key": "priceId",      "value": "" },
+    { "key": "billingKey",   "value": "" }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ravi Kumar\",\n  \"email\": \"ravi@example.com\",\n  \"password\": \"password123\",\n  \"phone\": \"9876543210\",\n  \"role\": \"user\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register Shop Owner",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Suresh Stores\",\n  \"email\": \"suresh@store.com\",\n  \"password\": \"shoppass123\",\n  \"phone\": \"9123456789\",\n  \"role\": \"shopOwner\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.token) {",
+                  "  pm.collectionVariables.set('userToken', res.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ravi@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/me",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }]
+          }
+        },
+        {
+          "name": "Update Location",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/auth/update-location",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 14.4426,\n  \"longitude\": 79.9865,\n  \"city\": \"Nellore\",\n  \"pincode\": \"524001\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/auth/change-password",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"password123\",\n  \"newPassword\": \"newpassword456\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏪 Shops",
+      "item": [
+        {
+          "name": "Get Nearby Shops",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/shops/nearby?lat=14.4426&lng=79.9865&radius=10&page=1&limit=10",
+              "query": [
+                { "key": "lat",    "value": "14.4426" },
+                { "key": "lng",    "value": "79.9865" },
+                { "key": "radius", "value": "10" },
+                { "key": "page",   "value": "1" },
+                { "key": "limit",  "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Ranked Shops",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/shops/ranked?city=Nellore&limit=10",
+              "query": [
+                { "key": "city",  "value": "Nellore" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Shop Details",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/shops/{{shopId}}"
+          }
+        },
+        {
+          "name": "Create Shop (Owner)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data._id) {",
+                  "  pm.collectionVariables.set('shopId', res.data._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/shops",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Suresh Kirana Store\",\n  \"description\": \"Fresh groceries at best prices\",\n  \"category\": \"grocery\",\n  \"address\": {\n    \"street\": \"42 Gandhi Nagar\",\n    \"landmark\": \"Near Bus Stand\",\n    \"city\": \"Nellore\",\n    \"state\": \"Andhra Pradesh\",\n    \"pincode\": \"524001\"\n  },\n  \"location\": {\n    \"coordinates\": [79.9865, 14.4426]\n  },\n  \"phone\": \"9123456789\",\n  \"tags\": [\"fresh\", \"organic\", \"discount\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Generate Billing Machine Key",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/shops/owner/generate-billing-key",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }]
+          }
+        },
+        {
+          "name": "Toggle Favourite Shop",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/shops/{{shopId}}/favourite",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛒 Products",
+      "item": [
+        {
+          "name": "Get All Products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products?page=1&limit=20&category=grains-pulses",
+              "query": [
+                { "key": "page",     "value": "1" },
+                { "key": "limit",    "value": "20" },
+                { "key": "category", "value": "grains-pulses" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products?search=rice&sortBy=lowest-price",
+              "query": [
+                { "key": "search", "value": "rice" },
+                { "key": "sortBy", "value": "lowest-price" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Compare Product Prices (Nearby)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}/compare?lat=14.4426&lng=79.9865&radius=10",
+              "query": [
+                { "key": "lat",    "value": "14.4426" },
+                { "key": "lng",    "value": "79.9865" },
+                { "key": "radius", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Product to Catalog (Owner/Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data._id) {",
+                  "  pm.collectionVariables.set('productId', res.data._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/products",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tata Salt\",\n  \"description\": \"Iodized refined salt\",\n  \"category\": \"packaged-food\",\n  \"brand\": \"Tata\",\n  \"unit\": \"1kg\",\n  \"barcode\": \"8901234567890\",\n  \"tags\": [\"salt\", \"iodized\", \"kitchen\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Add Product to Shop Inventory",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data._id) {",
+                  "  pm.collectionVariables.set('priceId', res.data._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/products/inventory/add",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"price\": 22,\n  \"mrp\": 25,\n  \"stockQuantity\": 100,\n  \"stockUnit\": \"packets\",\n  \"lowStockThreshold\": 10\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Shop Inventory",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/products/inventory/{{priceId}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 20,\n  \"stockQuantity\": 150\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Shop Inventory",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products/inventory/list?lowStock=false",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "⭐ Reviews",
+      "item": [
+        {
+          "name": "Get Product Reviews",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reviews/Product/{{productId}}?sort=recent&limit=10",
+              "query": [
+                { "key": "sort",  "value": "recent" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Shop Reviews",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reviews/Shop/{{shopId}}"
+          }
+        },
+        {
+          "name": "Post Product Review",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/reviews",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetType\": \"Product\",\n  \"targetId\": \"{{productId}}\",\n  \"shopId\": \"{{shopId}}\",\n  \"rating\": 5,\n  \"title\": \"Great quality!\",\n  \"comment\": \"Genuine product at the best price I found.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Post Shop Review",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/reviews",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetType\": \"Shop\",\n  \"targetId\": \"{{shopId}}\",\n  \"rating\": 4,\n  \"title\": \"Good service\",\n  \"comment\": \"Friendly staff and fresh products.\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📈 Trending",
+      "item": [
+        {
+          "name": "Get Trending Products (by city)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/trending?locality=nellore&limit=10",
+              "query": [
+                { "key": "locality", "value": "nellore" },
+                { "key": "limit",    "value": "10" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧾 Orders",
+      "item": [
+        {
+          "name": "Place Order",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/orders",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"shopId\": \"{{shopId}}\",\n      \"quantity\": 2\n    }\n  ],\n  \"deliveryAddress\": {\n    \"street\": \"12 MG Road\",\n    \"city\": \"Nellore\",\n    \"state\": \"Andhra Pradesh\",\n    \"pincode\": \"524001\"\n  },\n  \"paymentMethod\": \"upi\"\n}"
+            }
+          }
+        },
+        {
+          "name": "My Orders",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/orders/my-orders",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🖨️ Billing Machine",
+      "item": [
+        {
+          "name": "Record Sale (from billing machine)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/billing/sale",
+            "header": [
+              { "key": "X-Billing-Api-Key", "value": "{{billingKey}}" },
+              { "key": "Content-Type",       "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"machineId\": \"TERMINAL_001\",\n  \"items\": [\n    {\n      \"barcode\": \"8901234567890\",\n      \"quantitySold\": 3,\n      \"price\": 22\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Stock (from billing machine)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/billing/stock-update",
+            "header": [
+              { "key": "X-Billing-Api-Key", "value": "{{billingKey}}" },
+              { "key": "Content-Type",       "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"machineId\": \"TERMINAL_001\",\n  \"items\": [\n    {\n      \"barcode\": \"8901234567890\",\n      \"addStock\": 50,\n      \"newPrice\": 21,\n      \"mrp\": 25\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Billing Logs (Owner)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/billing/logs?limit=20",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "💓 Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:5000/health"
+          }
+        }
+      ]
+    }
+  ]
+}
