@@ -2,6 +2,7 @@
 
 > Production-ready Node.js + Express + MongoDB backend for the FairCart grocery price comparison platform.
 
+https://github.com/Gsudheerk68/fair-kart/tree/main
 ---
 
 ## 📁 Folder Structure
